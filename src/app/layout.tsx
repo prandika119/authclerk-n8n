@@ -25,21 +25,14 @@ export default function RootLayout({
             <body>
                 <header
                     style={{
+                        backgroundColor: "white",
                         padding: "1rem",
                         display: "flex",
                         justifyContent: "space-between",
                         alignItems: "center",
                     }}
                 >
-                    <h1>My Awesome App</h1>
-                    {/* <div>
-                            <SignedOut>
-                                <SignInButton />
-                            </SignedOut>
-                            <SignedIn>
-                                <UserButton />
-                            </SignedIn>
-                        </div> */}
+                    <h1 style={{ color: "black" }}>Chatbot Robota</h1>
                 </header>
                 <main>{children}</main>
             </body>

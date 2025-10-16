@@ -6,15 +6,19 @@ import Link from "next/link";
 export default function LoginForm({ webhookUrl }: { webhookUrl: string }) {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
+    const [popup, setPopup] = useState<{
+        show: boolean;
+        type: "success" | "error";
+        message: string;
+    }>({ show: false, type: "success", message: "" });
+
     const searchParams = useSearchParams();
     const tele_id = searchParams.get("tele_id");
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
-        setError("");
         try {
             const res = await fetch(webhookUrl ?? "", {
                 method: "POST",
@@ -26,20 +30,26 @@ export default function LoginForm({ webhookUrl }: { webhookUrl: string }) {
             const data = await res.json().catch(() => ({}));
             setLoading(false);
             if (res.ok) {
-                alert(
-                    "Login berhasil!" +
-                    (data && data.message ? `\n${data.message}` : "")
-                );
+                setPopup({
+                    show: true,
+                    type: "success",
+                    message: data?.message || "Login berhasil!",
+                });
             } else {
-                setError(
-                    data && data.error
-                        ? data.error
-                        : "Login gagal, cek data Anda."
-                );
+                setPopup({
+                    show: true,
+                    type: "error",
+                    message:
+                        data?.error || "Login gagal, cek data Anda.",
+                });
             }
         } catch {
             setLoading(false);
-            setError("Terjadi kesalahan koneksi ke server.");
+            setPopup({
+                show: true,
+                type: "error",
+                message: "Terjadi kesalahan koneksi ke server.",
+            });
         }
     };
 
@@ -50,9 +60,6 @@ export default function LoginForm({ webhookUrl }: { webhookUrl: string }) {
                 className="sm:shadow-xl px-8 pb-8 pt-12 sm:bg-white rounded-xl space-y-8 min-w-[350px] w-full max-w-md"
             >
                 <h2 className="font-semibold text-2xl text-black text-center">Login Chatbot RoboAI</h2>
-                {error && (
-                    <div className="mb-4 text-red-500 text-center">{error}</div>
-                )}
                 <div className="mb-4">
                     <label className="block text-sm font-medium text-gray-700" htmlFor="email">
                         Email Robota
@@ -98,6 +105,43 @@ export default function LoginForm({ webhookUrl }: { webhookUrl: string }) {
                     </Link>
                 </p>
             </form>
+
+            {popup.show && (
+                <div
+                    className="fixed inset-0 bg-black/30 backdrop-blur-sm flex justify-center items-center"
+                    onClick={() => setPopup({ ...popup, show: false })}
+                >
+                    <div className="bg-white p-6 rounded-lg shadow-lg text-center max-w-sm w-full"
+                        onClick={(e) => e.stopPropagation()}>
+                        <h3
+                            className={`text-xl font-bold mb-4 ${popup.type === "success"
+                                ? "text-green-600"
+                                : "text-red-600"
+                                }`}
+                        >
+                            {popup.type === "success" ? "Berhasil!" : "Gagal"}
+                        </h3>
+                        <p className="text-gray-700 mb-6">{popup.message}</p>
+                        {popup.type === "success" ? (
+                            <a
+                                href="https://t.me/RoboAI_AsistenHotelManager_bot"
+                                className="bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-700 transition-colors"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                            >
+                                Kembali ke Telegram
+                            </a>
+                        ) : (
+                            <button
+                                onClick={() => setPopup({ ...popup, show: false })}
+                                className="bg-red-500 text-white font-bold py-2 px-4 rounded hover:bg-red-700 transition-colors"
+                            >
+                                Coba Lagi
+                            </button>
+                        )}
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
